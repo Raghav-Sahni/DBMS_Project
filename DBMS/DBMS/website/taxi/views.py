@@ -8,9 +8,9 @@ from django.urls import reverse
 from .models import User, Driver, BillDetails, CarManufacturer, CustomerService, PremiumUser, TripDetails, Taxi, Feedback
 
 class BillForm(forms.Form):
-    bill_no = forms.IntegerField(label="Bill Number")
-    user_id = forms.IntegerField(label="User_ID")
-    amt = forms.IntegerField(label="Total Amount")
+    bill_no = forms.IntegerField(label="Bill Number", required=False)
+    user_id = forms.IntegerField(label="User_ID", required=False)
+    amt = forms.IntegerField(label="Total Amount", required=False)#add required=False to all
 
 class DriverForm(forms.Form):
     trip_id = forms.IntegerField(label="Trip ID")
@@ -42,7 +42,7 @@ def bill(request):
         form = BillForm(request.POST) #TO get data that user has submitted
         if form.is_valid(): #If submition is valid
             data = {"bill_no": form.cleaned_data["bill_no"], "user_id": form.cleaned_data["user_id"], "amount": form.cleaned_data["amt"]} #TaskForm stores task input in tasks variable
-            #request.session["tasks"]+=[task]
+            # Now need to rectify for if null then dont search on that query
             b = BillDetails.objects.filter(bill_no = data["bill_no"], tot_amt = data["amount"], userid = data["user_id"])
             return render(request, "taxi/table.html", {
                 "data": b
