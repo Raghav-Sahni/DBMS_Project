@@ -68,17 +68,17 @@ def driver(request):
         if form.is_valid(): #If submition is valid
             data = {"trip_id": form.cleaned_data["trip_id"], "name": form.cleaned_data["name"], "age": form.cleaned_data["age"], "rating": form.cleaned_data["rating"], "driver_id": form.cleaned_data["driver_id"]} #TaskForm stores task input in tasks variable
             #Still need to work on trip_id
-            b = Driver.objects.all()
-            if data["name"] != None:
-                b = b.filter(name = data["name"])
+            d = Driver.objects.all()
+            if data["name"] != "":
+                d = d.filter(name = data["name"])
             if data["age"] != None:
-                b = b.filter(age = data["age"])
+                d = d.filter(age = data["age"])
             if data["rating"] != None:
-                b = b.filter(rating = data["rating"])
+                d = d.filter(rating = data["rating"])
             if data["driver_id"] != None:
-                b = b.filter(driver_id = data["driver_id"])
+                d = d.filter(driver_id = data["driver_id"])
             return render(request, "taxi/table.html", {
-                "data": b
+                "data": d
             })
         else:# For server side validation, sometimes when we make a change here but client page has not been refreshed then the old version of the form may take invalid inputs this block is to prevent that
             return render(request, "taxi/search_bill.html", {
@@ -97,7 +97,7 @@ def taxi(request):
             #Still need to work name
             b = Driver.objects.all()
             t = Taxi.objects.all()
-            if data["name"] != None:
+            if data["name"] != "":
                 b = b.filter(name = data["name"])
                 #t = t.filter(driver = b.values_list("driver_id"))
 
@@ -126,9 +126,9 @@ def trip(request):
             #Work on bill_no
             
             b = TripDetails.objects.all()
-            if data["start"] != None:
+            if data["start"] != "":
                 b = b.filter(startlocation = data["start"])
-            if data["end"] != None:
+            if data["end"] != "":
                 b = b.filter(destination = data["end"])
             return render(request, "taxi/table.html", {
                 "data": b
@@ -149,7 +149,7 @@ def user(request):
             data = {"name": form.cleaned_data["name"], "user_id":form.cleaned_data["user_id"]} #TaskForm stores task input in tasks variable
 
             b = User.objects.all()
-            if data["name"] != None:
+            if data["name"] != "":
                 b = b.filter(name = data["name"])
             if data["user_id"] != None:
                 b = b.filter(userid = data["user_id"])
