@@ -13,8 +13,12 @@
         {% for i in data.values %}
         <li>{{i}}</li>
         {%empty%}
+        {% for j in data %}
+        <li>{{j}}</li>
+        {%empty%}
         <li>Does not exist</li>
         {%endfor%}
+        {% endfor %}
       </ul>
   </body>
 </html>

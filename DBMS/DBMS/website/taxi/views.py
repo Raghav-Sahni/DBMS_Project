@@ -1,4 +1,3 @@
-#import mysql.connector
 from pathlib import Path
 from sqlite3 import dbapi2 as sq3
 from django import forms
@@ -6,6 +5,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from .models import User, Driver, BillDetails, CarManufacturer, CustomerService, PremiumUser, TripDetails, Taxi, Feedback
+from django.db import connection
 
 class BillForm(forms.Form):
     bill_no = forms.IntegerField(label="Bill Number", required=False)
@@ -69,6 +69,12 @@ def driver(request):
             data = {"trip_id": form.cleaned_data["trip_id"], "name": form.cleaned_data["name"], "age": form.cleaned_data["age"], "rating": form.cleaned_data["rating"], "driver_id": form.cleaned_data["driver_id"]} #TaskForm stores task input in tasks variable
             #Still need to work on trip_id
             d = Driver.objects.all()
+            if data["trip_id"] != None:
+                c = connection.cursor()
+                c.execute("SELECT * FROM DRIVER WHERE Driver_ID in (SELECT Driver_ID from TAXI WHERE Taxi_ID in(SELECT Taxi_ID FROM TRIP_DETAILS WHERE TripID =\'"+str(data["trip_id"])+"\'))")
+                return render(request, "taxi/table.html", {
+                "data": c.fetchall()
+            })
             if data["name"] != "":
                 d = d.filter(name = data["name"])
             if data["age"] != None:
@@ -95,12 +101,13 @@ def taxi(request):
         if form.is_valid(): #If submition is valid
             data = {"driver_id": form.cleaned_data["driver_id"], "name": form.cleaned_data["name"], "car_id": form.cleaned_data["car_id"]} #TaskForm stores task input in tasks variable
             #Still need to work name
-            b = Driver.objects.all()
             t = Taxi.objects.all()
             if data["name"] != "":
-                b = b.filter(name = data["name"])
-                #t = t.filter(driver = b.values_list("driver_id"))
-
+                c = connection.cursor()
+                c.execute("SELECT * FROM Taxi WHERE Driver_ID IN(SELECT driver_id FROM Driver WHERE name =\'"+data["name"]+"\')")
+                return render(request, "taxi/table.html", {
+                "data": c.fetchall()
+            })
             if data["driver_id"] != None:
                 t = t.filter(driver = data["driver_id"])
             if data["car_id"] != None:
@@ -123,7 +130,12 @@ def trip(request):
         form = TripForm(request.POST) #TO get data that user has submitted
         if form.is_valid(): #If submition is valid
             data = {"start": form.cleaned_data["start"], "end": form.cleaned_data["end"], "bill_no": form.cleaned_data["bill_no"]} #TaskForm stores task input in tasks variable
-            #Work on bill_no
+            if data["bill_no"] != None:
+                c = connection.cursor()
+                c.execute("SELECT * FROM TRIP_DETAILS WHERE TripID in (SELECT TripID FROM BILL_DETAILS WHERE Bill_No = \'"+str(data["bill_no"])+"\')")
+                return render(request, "taxi/table.html", {
+                "data": c.fetchall()
+            })
             
             b = TripDetails.objects.all()
             if data["start"] != "":
