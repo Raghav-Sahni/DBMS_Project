@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 from sqlite3 import dbapi2 as sq3
 from django import forms
 from django.http import HttpResponse, HttpResponseRedirect
@@ -15,7 +16,7 @@ class BillForm(forms.Form):
 class DriverForm(forms.Form):
     trip_id = forms.IntegerField(label="Trip ID", required=False)
     name = forms.CharField(label = "Name", required=False)
-    age = forms.IntegerField(label="Age", required=False)
+    age = forms.IntegerField(label="Age", required=False, min_value=18)
     rating = forms.IntegerField(label="Rating", required=False)
     driver_id = forms.IntegerField(label="Driver ID", required=False)
 
@@ -32,6 +33,28 @@ class TripForm(forms.Form):
 class UserForm(forms.Form):
     name = forms.CharField(label = "Name", required=False)
     user_id = forms.IntegerField(label = "User ID", required=False)
+
+class AddUserForm(forms.Form):
+    name = forms.CharField(label = "Name", required=False)
+    user_id = forms.IntegerField(label = "User ID", required=False)
+    contact_no= forms.IntegerField(label="Contact_No", required=False, min_value = 1000000000, max_value=9999999999)
+    gender=forms.CharField(label="Gender", required=False)
+    address = forms.CharField(label="Address", required=False)
+    User_email= forms.CharField(label="User_email", required=False)
+
+class AddTaxiForm(forms.Form):
+    taxi_id = forms.IntegerField(label='Taxi ID', required=False)  # Field name made lowercase.
+    status = forms.CharField(label='Status', required=False)  # Field name made lowercase.
+    driver_id = forms.IntegerField(label='Driver ID', required=False)  # Field name made lowercase.
+    car_id = forms.IntegerField(label="Car ID", required=False)
+
+class AddDriverForm(forms.Form):
+    name = forms.CharField(label='Name', required=False)  # Field name made lowercase.
+    gender = forms.CharField(label='Gender', required=False)  # Field name made lowercase.
+    contact_no = forms.CharField(label='Contact_No', required=False)  # Field name made lowercase.
+    age = forms.IntegerField(label='Age', required=False, min_value=18)  # Field name made lowercase.
+    driver_id = forms.IntegerField(label='Driver_ID', required=False)  # Field name made lowercase.
+    rating = forms.IntegerField(label='Rating', required=False) # Field name made lowercase.
 
 # Create your views here.
 def index(request):
@@ -176,3 +199,56 @@ def user(request):
     return render(request, "taxi/search_user.html", {
         "form": UserForm()
     })
+
+def example_(request):
+
+    
+    c = connection.cursor()
+    c.execute("select max(UserID) from user")
+    return render(request, "taxi/output.html", {
+        "data": c.fetchall()
+})
+
+def add_user(request):
+    if request.method=="POST":
+        form = AddUserForm(request.POST) #TO get data that user has submitted
+        if form.is_valid(): #If submition is valid
+            
+            data = {"name": form.cleaned_data["name"], "user_id":form.cleaned_data["user_id"], "contact_no":form.cleaned_data["contact_no"], "gender":form.cleaned_data["gender"],"address":form.cleaned_data["address"], "User_email":form.cleaned_data["User_email"]}  #TaskForm stores task input in tasks variable
+            c = connection.cursor()
+            c.execute("create user \'"+data["name"]+str(data["user_id"])+"\'@\'localhost\' identified by \'"+data["name"]+"@"+str(data["user_id"])+"\'")
+            c.execute("grant select on *.* to \'"+data["name"]+str(data["user_id"])+"\'@'localhost'")
+            c.execute("INSERT INTO USER VALUES(\'"+str(data["user_id"])+"\',\'"+str(data["User_email"])+"\',\'"+str(data["contact_no"])+"\',\'"+str(data["name"])+"\',\'"+str(data["gender"])+"\',\'"+str(data["address"])+"\')")
+            #c.commit()
+    return render(request, "taxi/add_user.html", {
+        "form": AddUserForm()
+    })
+
+def add_taxi(request):
+    if request.method=="POST":
+        form = AddTaxiForm(request.POST) #TO get data that user has submitted
+        if form.is_valid(): #If submition is valid
+            
+            data = {"taxi_id": form.cleaned_data["taxi_id"], "status":form.cleaned_data["status"], "driver_id":form.cleaned_data["driver_id"], "car_id":form.cleaned_data["car_id"]}  #TaskForm stores task input in tasks variable
+            c = connection.cursor()
+            c.execute("INSERT INTO TAXI VALUES("+str(data["taxi_id"])+",\'"+str(data["status"])+"\',"+str(data["driver_id"])+","+str(data["car_id"])+")")
+    return render(request, "taxi/add_taxi.html", {
+        "form": AddTaxiForm()
+    })
+
+def add_driver(request):
+    if request.method=="POST":
+        form = AddDriverForm(request.POST) #TO get data that user has submitted
+        if form.is_valid(): #If submition is valid
+            
+            data = {"name": form.cleaned_data["name"], "driver_id":form.cleaned_data["driver_id"], "contact_no":form.cleaned_data["contact_no"], "gender":form.cleaned_data["gender"],"age":form.cleaned_data["age"], "rating":form.cleaned_data["rating"]}  #TaskForm stores task input in tasks variable
+            c = connection.cursor()
+            c.execute("INSERT INTO DRIVER VALUES(\'"+str(data["name"])+"\',\'"+str(data["gender"])+"\',\'"+str(data["contact_no"])+"\',\'"+str(data["age"])+"\',\'"+str(data["driver_id"])+"\',\'"+str(data["rating"])+"\')")
+            #c.commit()
+    return render(request, "taxi/add_driver.html", {
+        "form": AddDriverForm()
+    })
+
+
+
+    

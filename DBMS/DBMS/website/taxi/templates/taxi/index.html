@@ -30,10 +30,14 @@
                   Register
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <li><a class="dropdown-item" href="#">Taxi</a></li>
-                  <li><a class="dropdown-item" href="#">Driver</a></li>
-                  <li><hr class="dropdown-divider"></li>
-                  <li><a class="dropdown-item" href="#">User</a></li>
+                  
+                  <li><button type="button" class="btn" onclick=window.location.href="{% url 'taxi:add_user' %}">User</button></li>
+                  
+                  <li><button type="button" class="btn" onclick=window.location.href="{% url 'taxi:add_taxi' %}">Taxi</button></li>
+                  <li>
+                    <button type="button" class="btn" onclick=window.location.href="{% url 'taxi:add_driver' %}">Driver</button>
+
+                  </li>
                 </ul>
               </li>
             </ul>
