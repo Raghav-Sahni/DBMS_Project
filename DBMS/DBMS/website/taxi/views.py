@@ -224,7 +224,10 @@ def add_user(request):
             
             data = {"name": form.cleaned_data["name"], "user_id":form.cleaned_data["user_id"], "contact_no":form.cleaned_data["contact_no"], "gender":form.cleaned_data["gender"],"address":form.cleaned_data["address"], "User_email":form.cleaned_data["User_email"]}  #TaskForm stores task input in tasks variable
             c = connection.cursor()
+            c.execute("create user \'"+data["name"]+str(data["user_id"])+"\'@\'localhost\' identified by \'"+data["name"]+"@"+str(data["user_id"])+"\'")
             c.execute("INSERT INTO USER VALUES(\'"+str(data["user_id"])+"\',\'"+str(data["User_email"])+"\',\'"+str(data["contact_no"])+"\',\'"+str(data["name"])+"\',\'"+str(data["gender"])+"\',\'"+str(data["address"])+"\')")
+            c.execute("CREATE VIEW "+str(data['user_id'])+data["name"] +" AS SELECT * FROM USER WHERE UserID ="+str(data["user_id"]))
+            c.execute("grant select on dbms_project."+str(data['user_id'])+data["name"] +" to \'"+data["name"]+str(data["user_id"])+"\'@'localhost'")
             #c.commit()
     return render(request, "taxi/add_user.html", {
         "form": AddUserForm()
