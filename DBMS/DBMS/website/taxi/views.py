@@ -78,11 +78,13 @@ def bill(request):
             }) 
         else:# For server side validation, sometimes when we make a change here but client page has not been refreshed then the old version of the form may take invalid inputs this block is to prevent that
             return render(request, "taxi/search_bill.html", {
-                "form": form
+                "form": form,
+                "stddev": ""
             })
 
     return render(request, "taxi/search_bill.html", {
-        "form": BillForm()
+        "form": BillForm(),
+        "stddev": ""
     })
 
 def driver(request):
@@ -98,6 +100,7 @@ def driver(request):
                 return render(request, "taxi/table.html", {
                 "data": c.fetchall()
             })
+            c = connection.cursor()
             if data["name"] != "":
                 d = d.filter(name = data["name"])
             if data["age"] != None:
@@ -106,16 +109,18 @@ def driver(request):
                 d = d.filter(rating = data["rating"])
             if data["driver_id"] != None:
                 d = d.filter(driver_id = data["driver_id"])
+            c.execute("select STDDEV(Rating) from DRIVER;")
             return render(request, "taxi/table.html", {
-                "data": d
+                "data": d,
+                "stddev": c.fetchall()
             })
         else:# For server side validation, sometimes when we make a change here but client page has not been refreshed then the old version of the form may take invalid inputs this block is to prevent that
             return render(request, "taxi/search_bill.html", {
-                "form": form
+                "form": form,
             })
 
     return render(request, "taxi/search_driv.html", {
-        "form": DriverForm()
+        "form": DriverForm(),
     })
 
 def taxi(request):
@@ -136,7 +141,8 @@ def taxi(request):
             if data["car_id"] != None:
                 t = t.filter(car_id = data["car_id"])
             return render(request, "taxi/table.html", {
-                "data": t
+                "data": t,
+                "stddev": ""
             })
             
         else:# For server side validation, sometimes when we make a change here but client page has not been refreshed then the old version of the form may take invalid inputs this block is to prevent that
@@ -159,14 +165,14 @@ def trip(request):
                 return render(request, "taxi/table.html", {
                 "data": c.fetchall()
             })
-            
             b = TripDetails.objects.all()
             if data["start"] != "":
                 b = b.filter(startlocation = data["start"])
             if data["end"] != "":
                 b = b.filter(destination = data["end"])
             return render(request, "taxi/table.html", {
-                "data": b
+                "data": b, 
+                "stddev": ""
             })
         else:# For server side validation, sometimes when we make a change here but client page has not been refreshed then the old version of the form may take invalid inputs this block is to prevent that
             return render(request, "taxi/search_trip.html", {
@@ -189,7 +195,8 @@ def user(request):
             if data["user_id"] != None:
                 b = b.filter(userid = data["user_id"])
             return render(request, "taxi/table.html", {
-                "data": b
+                "data": b, 
+                "stddev": ""
             })
         else:# For server side validation, sometimes when we make a change here but client page has not been refreshed then the old version of the form may take invalid inputs this block is to prevent that
             return render(request, "taxi/search_user.html", {
@@ -214,7 +221,7 @@ def example_(request):
     c = connection.cursor()
     c.execute("select max(UserID) from user")
     return render(request, "taxi/output.html", {
-        "data": c.fetchall()
+        "data": c.fetchall(),
 })
 
 def add_user(request):
@@ -253,6 +260,7 @@ def add_driver(request):
             data = {"name": form.cleaned_data["name"], "driver_id":form.cleaned_data["driver_id"], "contact_no":form.cleaned_data["contact_no"], "gender":form.cleaned_data["gender"],"age":form.cleaned_data["age"], "rating":form.cleaned_data["rating"]}  #TaskForm stores task input in tasks variable
             c = connection.cursor()
             c.execute("INSERT INTO DRIVER VALUES(\'"+str(data["name"])+"\',\'"+str(data["gender"])+"\',\'"+str(data["contact_no"])+"\',\'"+str(data["age"])+"\',\'"+str(data["driver_id"])+"\',\'"+str(data["rating"])+"\')")
+            c.execute("CREATE VIEW "+str(data['driver_id'])+data["name"] +" AS SELECT * FROM DRIVER WHERE DriverID ="+str(data["user_id"]))
             #c.commit()
     return render(request, "taxi/add_driver.html", {
         "form": AddDriverForm()
