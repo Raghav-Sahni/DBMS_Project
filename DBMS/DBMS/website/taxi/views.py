@@ -16,7 +16,7 @@ class BillForm(forms.Form):
 class DriverForm(forms.Form):
     trip_id = forms.IntegerField(label="Trip ID", required=False)
     name = forms.CharField(label = "Name", required=False)
-    age = forms.IntegerField(label="Age", required=False, min_value=18)
+    age = forms.IntegerField(label="Age", required=False)
     rating = forms.IntegerField(label="Rating", required=False)
     driver_id = forms.IntegerField(label="Driver ID", required=False)
 
@@ -37,7 +37,7 @@ class UserForm(forms.Form):
 class AddUserForm(forms.Form):
     name = forms.CharField(label = "Name", required=False)
     user_id = forms.IntegerField(label = "User ID", required=False)
-    contact_no= forms.IntegerField(label="Contact_No", required=False, min_value = 1000000000, max_value=9999999999)
+    contact_no= forms.IntegerField(label="Contact_No", required=False)
     gender=forms.CharField(label="Gender", required=False)
     address = forms.CharField(label="Address", required=False)
     User_email= forms.CharField(label="User_email", required=False)
@@ -52,7 +52,7 @@ class AddDriverForm(forms.Form):
     name = forms.CharField(label='Name', required=False)  # Field name made lowercase.
     gender = forms.CharField(label='Gender', required=False)  # Field name made lowercase.
     contact_no = forms.CharField(label='Contact_No', required=False)  # Field name made lowercase.
-    age = forms.IntegerField(label='Age', required=False, min_value=18)  # Field name made lowercase.
+    age = forms.IntegerField(label='Age', required=False)  # Field name made lowercase.
     driver_id = forms.IntegerField(label='Driver_ID', required=False)  # Field name made lowercase.
     rating = forms.IntegerField(label='Rating', required=False) # Field name made lowercase.
 
@@ -200,6 +200,14 @@ def user(request):
         "form": UserForm()
     })
 
+def premium_user(request):
+    c = connection.cursor()
+    c.execute("select P.UserID, U.Name from PREMIUM_USER P, USER U, TRIP_DETAILS T where P.UserID=T.UserID and T.UserID=U.UserID")
+    
+    return render(request, "taxi/premium_user.html", {
+        "data": c.fetchall()
+})
+
 def example_(request):
 
     
@@ -216,8 +224,6 @@ def add_user(request):
             
             data = {"name": form.cleaned_data["name"], "user_id":form.cleaned_data["user_id"], "contact_no":form.cleaned_data["contact_no"], "gender":form.cleaned_data["gender"],"address":form.cleaned_data["address"], "User_email":form.cleaned_data["User_email"]}  #TaskForm stores task input in tasks variable
             c = connection.cursor()
-            c.execute("create user \'"+data["name"]+str(data["user_id"])+"\'@\'localhost\' identified by \'"+data["name"]+"@"+str(data["user_id"])+"\'")
-            c.execute("grant select on *.* to \'"+data["name"]+str(data["user_id"])+"\'@'localhost'")
             c.execute("INSERT INTO USER VALUES(\'"+str(data["user_id"])+"\',\'"+str(data["User_email"])+"\',\'"+str(data["contact_no"])+"\',\'"+str(data["name"])+"\',\'"+str(data["gender"])+"\',\'"+str(data["address"])+"\')")
             #c.commit()
     return render(request, "taxi/add_user.html", {

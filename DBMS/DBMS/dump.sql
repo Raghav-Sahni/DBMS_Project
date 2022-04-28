@@ -9191,4 +9191,17 @@ CREATE TRIGGER age_checker
         END IF;
     END$$
 
+DELIMITER $$
+-- before inserting new id
+DROP TRIGGER IF EXISTS premium_inserter$$
+CREATE TRIGGER premium_inserter
+    AFTER INSERT ON TRIP_DETAILS FOR EACH ROW
+    BEGIN
+        -- condition to check
+        IF NEW.TripAmount >= 4000 THEN
+            -- hack to solve absence of SIGNAL/prepared statements in triggers
+            insert into PREMIUM_USER(UserID) values(New.UserID);
+        END IF;
+    END$$
+
 COMMIT;
